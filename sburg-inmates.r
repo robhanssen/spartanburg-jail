@@ -64,16 +64,25 @@ inmate_data %>%
     filter(!is.na(city)) %>%
     ggplot() +
     aes(y = fct_reorder(city, n), x = n) +
+    # coord_cartesian(xlim = c(0, 500)) +
+    scale_x_continuous(limits = c(0, 450)) +
+    ggbreak::scale_x_break(c(60, 350)) +
+    labs(y = NULL, x = "Number of inmates") +
     geom_col()
 
+short_crime <- function(crime_long, max_len = 30) {
+    paste0(substr(crime_long, 1, max_len), 
+           ifelse(nchar(crime_long) > max_len, "...", "")
+           )
+}
 
 which_town <- function(data, town_req, state_req = "SC") {
     data %>%
         filter(town == town_req, state == state_req) %>%
         select(firstname, lastname, street, crime, time_in_jail) %>%
         unite("name", c(lastname, firstname),  sep = ", ") %>%
-        arrange(-time_in_jail) %>%
-        knitr::kable()
+        mutate(crime = short_crime(crime)) %>%
+        arrange(-time_in_jail)
 }
 
 # Boiling Springs inmates
@@ -82,6 +91,22 @@ which_town(inmate_data, "Boiling Springs")
 which_town(inmate_data, "Inman")
 # Chesnee inmates
 which_town(inmate_data, "Chesnee")
+
+map_dfr(c("Boiling Springs", "Inman", "Chesnee"), 
+        ~which_town(inmate_data, .x)) %>%
+        arrange(-time_in_jail) %>%
+        mutate(across(time_in_jail, ~ . * 30)) %>%
+        filter(time_in_jail <= 7) %>%
+        knitr::kable()
+
+inmate_data %>%
+        select(firstname, lastname, street, crime, time_in_jail) %>%
+        unite("name", c(lastname, firstname),  sep = ", ") %>%
+        mutate(crime = short_crime(crime)) %>%
+        arrange(-time_in_jail) %>%
+        mutate(across(time_in_jail, ~ . * 30)) %>%
+        filter(time_in_jail <= 3) %>%
+        knitr::kable()
 
 # by race and gender
 inmate_data %>%
@@ -102,3 +127,19 @@ inmate_data %>%
         breaks = 10^(-2:3),
         limit = c(.01, NA)
     )
+
+bmi_lines <-
+    crossing(ht = seq(1.4, 2.1, .1),
+            bmi = seq(15, 40, 5)) %>%
+    mutate(wt = bmi * ht^2)
+
+inmate_data %>%
+    ggplot + 
+    aes(ht, wt) + 
+    geom_point() +
+    geom_line(data = bmi_lines, aes(color = factor(bmi)))
+
+inmate_data %>%
+    group_by(sex) %>%
+    summarize(across(c(ht,wt, bmi), ~median(.x, na.rm = TRUE))) %>%
+    mutate(bmi_m = wt/ht^2)
