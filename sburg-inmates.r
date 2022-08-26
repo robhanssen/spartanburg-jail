@@ -133,11 +133,18 @@ bmi_lines <-
             bmi = seq(15, 40, 5)) %>%
     mutate(wt = bmi * ht^2)
 
+bmi_labels <-
+    bmi_lines %>%
+    filter(ht == max(ht))
+
+
 inmate_data %>%
     ggplot + 
     aes(ht, wt) + 
     geom_point() +
-    geom_line(data = bmi_lines, aes(color = factor(bmi)))
+    geom_line(data = bmi_lines, lty = 3, color = "gray50", aes(group = factor(bmi))) + #aes(color = factor(bmi))) + 
+    geom_label(data = bmi_labels, aes(x = ht, y = wt, label = bmi)) + 
+    theme(legend.position = "none")
 
 inmate_data %>%
     group_by(sex) %>%
