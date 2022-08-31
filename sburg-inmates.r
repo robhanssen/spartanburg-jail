@@ -86,7 +86,7 @@ which_town <- function(data, town_req, state_req = "SC") {
 }
 
 # Boiling Springs inmates
-which_town(inmate_data, "Boiling Springs")
+which_town(inmate_data, "Boiling Springs") %>% knitr::kable()
 # Inman inmates
 which_town(inmate_data, "Inman")
 # Chesnee inmates
