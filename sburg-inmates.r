@@ -24,22 +24,20 @@ extract_data <- function(data, index) {
     crime <- tolower(data[index]$`in`$ar$of$ol)
     street <- data[index]$`in`$street
     city <- data[index]$`in`$csz
-    tibble(lastname, firstname, age, race, sex,
-           ht, wt, booking, crime, street, city) %>%
+    tibble(
+        lastname, firstname, age, race, sex,
+        ht, wt, booking, crime, street, city
+    ) %>%
         mutate(across(everything(), unlist))
 }
 
 inmate_data <-
     map_dfr(seq_along(inmates), ~ extract_data(inmates, .x)) %>%
-    mutate(race = case_when(
-        race == "W" ~ "White",
-        race == "B" ~ "Black",
-        TRUE ~ "Other"
-    )) %>%
+    mutate(race = fct_lump_prop(factor(race), .1)) %>%
     separate(city, c("town", "state_zip"), sep = ", ") %>%
     separate(state_zip, c("state", "zipcode"), sep = " ") %>%
     mutate(across(c(lastname, firstname, street, town), str_to_title)) %>%
-    mutate(across(c(race, sex, state, town), factor)) %>%
+    mutate(across(c(sex, state, town), factor)) %>%
     separate(booking, c("time", "date"), sep = " ") %>%
     mutate(booking = mdy_hms(paste(date, time), tz = "EST")) %>%
     mutate(time_in_jail = (now() - booking) / dmonths(1)) %>%
@@ -71,16 +69,17 @@ inmate_data %>%
     geom_col()
 
 short_crime <- function(crime_long, max_len = 30) {
-    paste0(substr(crime_long, 1, max_len), 
-           ifelse(nchar(crime_long) > max_len, "...", "")
-           )
+    paste0(
+        substr(crime_long, 1, max_len),
+        ifelse(nchar(crime_long) > max_len, "...", "")
+    )
 }
 
 which_town <- function(data, town_req, state_req = "SC") {
     data %>%
         filter(town == town_req, state == state_req) %>%
         select(firstname, lastname, street, crime, time_in_jail) %>%
-        unite("name", c(lastname, firstname),  sep = ", ") %>%
+        unite("name", c(lastname, firstname), sep = ", ") %>%
         mutate(crime = short_crime(crime)) %>%
         arrange(-time_in_jail)
 }
@@ -88,25 +87,27 @@ which_town <- function(data, town_req, state_req = "SC") {
 # Boiling Springs inmates
 which_town(inmate_data, "Boiling Springs") %>% knitr::kable()
 # Inman inmates
-which_town(inmate_data, "Inman")
+which_town(inmate_data, "Inman") %>% knitr::kable()
 # Chesnee inmates
-which_town(inmate_data, "Chesnee")
+which_town(inmate_data, "Chesnee") %>% knitr::kable()
 
-map_dfr(c("Boiling Springs", "Inman", "Chesnee"), 
-        ~which_town(inmate_data, .x)) %>%
-        arrange(-time_in_jail) %>%
-        mutate(across(time_in_jail, ~ . * 30)) %>%
-        filter(time_in_jail <= 7) %>%
-        knitr::kable()
+map_dfr(
+    c("Boiling Springs", "Inman", "Chesnee"),
+    ~ which_town(inmate_data, .x)
+) %>%
+    arrange(-time_in_jail) %>%
+    mutate(across(time_in_jail, ~ . * 30)) %>%
+    filter(time_in_jail <= 7) %>%
+    knitr::kable()
 
 inmate_data %>%
-        select(firstname, lastname, street, crime, time_in_jail) %>%
-        unite("name", c(lastname, firstname),  sep = ", ") %>%
-        mutate(crime = short_crime(crime)) %>%
-        arrange(-time_in_jail) %>%
-        mutate(across(time_in_jail, ~ . * 30)) %>%
-        filter(time_in_jail <= 3) %>%
-        knitr::kable()
+    select(firstname, lastname, street, crime, time_in_jail) %>%
+    unite("name", c(lastname, firstname), sep = ", ") %>%
+    mutate(crime = short_crime(crime)) %>%
+    arrange(-time_in_jail) %>%
+    mutate(across(time_in_jail, ~ . * 30)) %>%
+    filter(time_in_jail <= 3) %>%
+    knitr::kable()
 
 # by race and gender
 inmate_data %>%
@@ -129,8 +130,10 @@ inmate_data %>%
     )
 
 bmi_lines <-
-    crossing(ht = seq(1.4, 2.1, .1),
-            bmi = seq(15, 40, 5)) %>%
+    crossing(
+        ht = seq(1.4, 2.1, .1),
+        bmi = seq(15, 40, 5)
+    ) %>%
     mutate(wt = bmi * ht^2)
 
 bmi_labels <-
@@ -139,14 +142,35 @@ bmi_labels <-
 
 
 inmate_data %>%
-    ggplot + 
-    aes(ht, wt) + 
+    ggplot() +
+    aes(x = ht, y = wt, color = sex) +
     geom_point() +
-    geom_line(data = bmi_lines, lty = 3, color = "gray50", aes(group = factor(bmi))) + #aes(color = factor(bmi))) + 
-    geom_label(data = bmi_labels, aes(x = ht, y = wt, label = bmi)) + 
+    stat_ellipse() +
+    geom_line(
+        data = bmi_lines,
+        lty = 3,
+        color = "gray50",
+        aes(
+            group = factor(bmi),
+            color = NULL
+        )
+    ) +
+    geom_label(
+        data = bmi_labels,
+        aes(
+            x = ht, y = wt,
+            label = bmi,
+            color = NULL
+        )
+    ) +
+    scale_color_manual(values = c("F" = "pink", "M" = "dodgerblue")) +
+    labs(x = "Height (in m)", y = "Weight (in kg)") +
     theme(legend.position = "none")
 
 inmate_data %>%
-    group_by(sex) %>%
-    summarize(across(c(ht,wt, bmi), ~median(.x, na.rm = TRUE))) %>%
-    mutate(bmi_m = wt/ht^2)
+    group_by(sex, race) %>%
+    summarize(
+        n = n(),
+        across(c(ht, wt, bmi), ~ median(.x, na.rm = TRUE))
+    ) %>%
+    mutate(bmi_m = wt / ht^2)
