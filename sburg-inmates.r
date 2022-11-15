@@ -53,21 +53,6 @@ save(inmate_data, file = "Rdata/inmates.RData")
 
 summary(inmate_data)
 
-# where do most criminals come from?
-inmate_data %>%
-    group_by(town, state) %>%
-    summarise(n = n(), .groups = "drop") %>%
-    slice_max(n, n = 20) %>%
-    mutate(city = interaction(town, state)) %>%
-    filter(!is.na(city)) %>%
-    ggplot() +
-    aes(y = fct_reorder(city, n), x = n) +
-    # coord_cartesian(xlim = c(0, 500)) +
-    scale_x_continuous(limits = c(0, 450)) +
-    ggbreak::scale_x_break(c(60, 350)) +
-    labs(y = NULL, x = "Number of inmates") +
-    geom_col()
-
 short_crime <- function(crime_long, max_len = 30) {
     paste0(
         substr(crime_long, 1, max_len),
@@ -108,6 +93,23 @@ inmate_data %>%
     mutate(across(time_in_jail, ~ . * 30)) %>%
     filter(time_in_jail <= 3) %>%
     knitr::kable()
+
+# where do most criminals come from?
+inmate_data %>%
+    group_by(town, state) %>%
+    summarise(n = n(), .groups = "drop") %>%
+    slice_max(n, n = 20) %>%
+    mutate(city = interaction(town, state)) %>%
+    filter(!is.na(city)) %>%
+    ggplot() +
+    aes(y = fct_reorder(city, n), x = n) +
+    # coord_cartesian(xlim = c(0, 500)) +
+    scale_x_continuous(limits = c(0, 450)) +
+    ggbreak::scale_x_break(c(60, 350)) +
+    labs(y = NULL, x = "Number of inmates") +
+    geom_col()
+
+
 
 # by race and gender
 inmate_data %>%
