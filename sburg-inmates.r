@@ -94,6 +94,14 @@ inmate_data %>%
     filter(time_in_jail <= 3) %>%
     knitr::kable()
 
+inmate_data %>%
+    filter(str_detect(crime, "shop") | str_detect(crime, "goods")) %>%
+    select(lastname, firstname, age, race, street, town, crime) %>%
+    arrange(age) %>% View()
+
+inmate_data %>%
+    count(crime, sort = TRUE) %>% View()
+
 # where do most criminals come from?
 inmate_data %>%
     group_by(town, state) %>%
