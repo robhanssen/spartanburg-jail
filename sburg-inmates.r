@@ -4,9 +4,6 @@ library(xml2)
 library(ggridges)
 theme_set(theme_light())
 
-
-
-
 rawdata <-
     read_xml("http://www.spartanburgsheriff.org/bookings/jailrostera.xml")
 
@@ -59,15 +56,16 @@ save(inmate_data, file = "Rdata/inmates.RData")
 #
 
 crossing(
-        gl = read_csv("sources/glstreets.csv") %>% pull(streetname),
-        inm = inmate_data %>%
-            filter(town == "Boiling Springs") %>%
-            pull(street)
-    ) %>%
-    mutate(in_glenlake = str_detect(inm, gl)) %>%
+    gl = read_csv("sources/glstreets.csv", col_types = "c") %>%
+        pull(streetname),
+    street = inmate_data %>%
+        filter(town == "Boiling Springs") %>%
+        pull(street)
+) %>%
+    mutate(in_glenlake = str_detect(street, gl)) %>%
     filter(in_glenlake) %>%
-    inner_join(inmate_data, by = c("inm" = "street")) %>%
-    select(lastname, firstname, street = inm, town, crime) %>%
+    inner_join(inmate_data, by = "street") %>%
+    select(lastname, firstname, street, town, crime) %>%
     knitr::kable()
 
 
@@ -80,11 +78,11 @@ short_crime <- function(crime_long, max_len = 30) {
 
 which_town <- function(data, town_req, state_req = "SC") {
     data %>%
-        filter(town == town_req, state == state_req) %>%
-        select(firstname, lastname, street, crime, time_in_jail) %>%
-        unite("name", c(lastname, firstname), sep = ", ") %>%
-        mutate(crime = short_crime(crime)) %>%
-        arrange(-time_in_jail)
+        dplyr::filter(town == town_req, state == state_req) %>%
+        dplyr::select(firstname, lastname, street, crime, time_in_jail) %>%
+        dplyr::unite("name", c(lastname, firstname), sep = ", ") %>%
+        dplyr::mutate(crime = short_crime(crime)) %>%
+        dplyr::arrange(-time_in_jail)
 }
 
 # Boiling Springs inmates
@@ -115,10 +113,12 @@ inmate_data %>%
 inmate_data %>%
     filter(str_detect(crime, "shop") | str_detect(crime, "goods")) %>%
     select(lastname, firstname, age, race, street, town, crime) %>%
-    arrange(age) %>% View()
+    arrange(age) %>%
+    View()
 
 inmate_data %>%
-    count(crime, sort = TRUE) %>% View()
+    count(crime, sort = TRUE) %>%
+    View()
 
 # where do most criminals come from?
 inmate_data %>%
