@@ -4,6 +4,9 @@ library(xml2)
 library(ggridges)
 theme_set(theme_light())
 
+
+
+
 rawdata <-
     read_xml("http://www.spartanburgsheriff.org/bookings/jailrostera.xml")
 
@@ -51,7 +54,22 @@ inmate_data <-
 
 save(inmate_data, file = "Rdata/inmates.RData")
 
-summary(inmate_data)
+#
+# in Glenlake?
+#
+
+crossing(
+        gl = read_csv("sources/glstreets.csv") %>% pull(streetname),
+        inm = inmate_data %>%
+            filter(town == "Boiling Springs") %>%
+            pull(street)
+    ) %>%
+    mutate(in_glenlake = str_detect(inm, gl)) %>%
+    filter(in_glenlake) %>%
+    inner_join(inmate_data, by = c("inm" = "street")) %>%
+    select(lastname, firstname, street = inm, town, crime) %>%
+    knitr::kable()
+
 
 short_crime <- function(crime_long, max_len = 30) {
     paste0(
