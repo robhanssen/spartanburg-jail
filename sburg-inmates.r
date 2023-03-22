@@ -80,7 +80,7 @@ which_town <- function(data, town_req, state_req = "SC") {
     data %>%
         dplyr::filter(town == town_req, state == state_req) %>%
         dplyr::select(firstname, lastname, street, crime, time_in_jail) %>%
-        dplyr::unite("name", c(lastname, firstname), sep = ", ") %>%
+        tidyr::unite("name", c(lastname, firstname), sep = ", ") %>%
         dplyr::mutate(crime = short_crime(crime)) %>%
         dplyr::arrange(-time_in_jail)
 }
