@@ -27,9 +27,13 @@ inmates_df1 <-
     tibble(inmates_raw) %>%
     unnest(inmates_raw) %>%
     rowid_to_column() %>%
-    unnest_wider(inmates_raw) %>%
+    unnest_wider(inmates_raw, names_repair = "unique") %>%
     mutate(across(
-        c(nl:nf, csz:racegen, sex:wt, dtin:tmout, urlSAVAN, lastdtout:lasttmout),
+        c(
+            nl:nf, csz:racegen,
+            sex:wt, dtin:tmout,
+            urlSAVAN, lastdtout:lasttmout
+        ),
         unlist
     )) %>%
     mutate(nm = sapply(
@@ -53,16 +57,22 @@ inmates_df1 <-
     )) %>%
     mutate(race = unlist(race)) %>%
     mutate(across(c(age, wt), as.numeric)) %>%
-    mutate(ht = return_height(ht), 
-           wt = wt / 2.2,
-           bmi = wt / ht^2) %>%
+    mutate(
+        ht = return_height(ht),
+        wt = wt / 2.2,
+        bmi = wt / ht^2
+    ) %>%
     mutate(across(race:sex, factor))
 
-offenses <-
+offenses25 <-
     inmates_df1 %>%
-    select(rowid, ar) %>%
-    unnest_longer(ar) %>%
-    pivot_wider(names_from = "ar_id", values_from = "ar", values_fn = list) %>%
+    select(rowid, `ar...25`) %>%
+    unnest_longer(`ar...25`) %>%
+    pivot_wider(
+        names_from = "ar...25_id",
+        values_from = "ar...25",
+        values_fn = list
+    ) %>%
     select(rowid, of) %>%
     unnest(of) %>%
     unnest_wider(of) %>%
@@ -72,25 +82,69 @@ offenses <-
     mutate(offense = str_to_title(ol)) %>%
     select(rowid, offense)
 
+offenses26 <-
+    inmates_df1 %>%
+    select(rowid, `ar...26`) %>%
+    unnest_longer(`ar...26`) %>%
+    pivot_wider(
+        names_from = "ar...26_id",
+        values_from = "ar...26",
+        values_fn = list
+    ) %>%
+    select(rowid, of) %>%
+    unnest(of) %>%
+    unnest_wider(of) %>%
+    select(rowid, ol) %>%
+    unnest(ol) %>%
+    unnest(ol) %>%
+    mutate(offense = str_to_title(ol)) %>%
+    select(rowid, offense)
 
+offenses <- bind_rows(offenses25) #, offenses26)
 
 inmate_offense <-
     right_join(inmates_df1, offenses, by = "rowid", multiple = "all")
 
 
 inmate_offense %>%
-    filter(str_detect(csz, "Boiling Springs")) %>%
-    select(nl, nf, street, age, offense) %>% 
-    arrange(nl) %>% View()
+    filter(str_detect(csz, "Boiling Springs|Chesnee|Inman")) %>%
+    count(offense, sort = TRUE)
+
+inmate_offense %>%
+    count(offense, sort = TRUE) %>% View()
+
+
+crossing(
+    gl = read_csv("sources/glstreets.csv", col_types = "c") %>%
+        pull(streetname),
+    street = inmates_df1 %>%
+        filter(str_detect(csz, "Boiling Springs")) %>%
+        pull(street)
+) %>%
+    mutate(in_glenlake = str_detect(street, gl)) %>%
+    filter(in_glenlake) %>%
+    inner_join(inmate_offense, by = "street") %>%
+    select(nl, nf, street, csz, offense) %>%
+    knitr::kable()
+
+
+inmate_offense %>%
+    filter(str_detect(offense, "Carbreaking")) %>%
+    select(nl, nf) %>%
+    unite("name", c(nf, nl), sep = " ") %>%
+    count(name, sort = TRUE)
+
+inmate_offense %>%
+    filter(str_detect(offense, "Csc|Child|Minor|Sex")) %>%
+    unite("name", c(nf, nl), sep = " ") %>%
+    select(csz, name, offense, ) %>% View()
 
 
 
 
-
-
-
-
-
+inmate_offense %>%
+    unite("name", c(nf, nm, nl), sep = " ") %>%
+    count(name, sort = TRUE)
 
 
 bmi_lines <-
