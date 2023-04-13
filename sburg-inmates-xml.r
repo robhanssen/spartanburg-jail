@@ -100,7 +100,7 @@ offenses26 <-
     mutate(offense = str_to_title(ol)) %>%
     select(rowid, offense)
 
-offenses <- bind_rows(offenses25) #, offenses26)
+offenses <- bind_rows(offenses25) # , offenses26)
 
 inmate_offense <-
     right_join(inmates_df1, offenses, by = "rowid", multiple = "all")
@@ -111,7 +111,8 @@ inmate_offense %>%
     count(offense, sort = TRUE)
 
 inmate_offense %>%
-    count(offense, sort = TRUE) %>% View()
+    count(offense, sort = TRUE) %>%
+    View()
 
 
 crossing(
@@ -137,7 +138,8 @@ inmate_offense %>%
 inmate_offense %>%
     filter(str_detect(offense, "Csc|Child|Minor|Sex")) %>%
     unite("name", c(nf, nl), sep = " ") %>%
-    select(csz, name, offense, ) %>% View()
+    select(csz, name, offense, ) %>%
+    View()
 
 
 
