@@ -11,7 +11,9 @@ null_weeder <- function(x) {
 }
 
 return_height <- function(ht_text) {
-    lst <- str_remove_all(ht_text, '(\\")') %>% str_split(., pattern = "'")
+    lst <-
+        stringr::str_remove_all(ht_text, '(\\")') |>
+        stringr::str_split(string = _, pattern = "'")
     sapply(seq_along(lst), function(i) {
         as.numeric(lst[[i]][1]) * 0.3054 + 0.0254 * as.numeric(lst[[i]][2])
     })
@@ -141,14 +143,19 @@ inmate_offense %>%
     select(csz, name, offense, ) %>%
     View()
 
-inmates_df1 %>% 
+inmates_df1 %>%
     mutate(time_in_jail = now() - bd) %>%
     group_by(race, sex) %>%
-    summarize(av_time = sum(time_in_jail) / ddays(1) / n(), 
-              q95 = quantile(time_in_jail, .83) / ddays(1),
-            .groups = "drop") %>%
-    pivot_wider(names_from = c("sex" ), values_from = c("av_time","q95"), values_fill = NA_real_) %>%
-    filter(race %in% c("B","W"))
+    summarize(
+        av_time = sum(time_in_jail) / ddays(1) / n(),
+        q95 = quantile(time_in_jail, .83) / ddays(1),
+        .groups = "drop"
+    ) %>%
+    pivot_wider(
+        names_from = c("sex"),
+        values_from = c("av_time", "q95"), values_fill = NA_real_
+    ) %>%
+    filter(race %in% c("B", "W"))
 
 
 inmate_offense %>%
