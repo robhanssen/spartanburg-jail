@@ -66,11 +66,11 @@ inmates_df1 <-
 
 offenses25 <-
     inmates_df1 %>%
-    select(rowid, `ar...25`) %>%
-    unnest_longer(`ar...25`) %>%
+    select(rowid, `ar`) %>%
+    unnest_longer(`ar`) %>%
     pivot_wider(
-        names_from = "ar...25_id",
-        values_from = "ar...25",
+        names_from = "ar_id",
+        values_from = "ar",
         values_fn = list
     ) %>%
     select(rowid, of) %>%
@@ -124,7 +124,7 @@ crossing(
 ) %>%
     mutate(in_glenlake = str_detect(street, gl)) %>%
     filter(in_glenlake) %>%
-    inner_join(inmate_offense, by = "street") %>%
+    inner_join(inmate_offense, by = "street", multiple = "all") %>%
     select(nl, nf, street, csz, offense) %>%
     knitr::kable()
 
@@ -141,7 +141,14 @@ inmate_offense %>%
     select(csz, name, offense, ) %>%
     View()
 
-
+inmates_df1 %>% 
+    mutate(time_in_jail = now() - bd) %>%
+    group_by(race, sex) %>%
+    summarize(av_time = sum(time_in_jail) / ddays(1) / n(), 
+              q95 = quantile(time_in_jail, .83) / ddays(1),
+            .groups = "drop") %>%
+    pivot_wider(names_from = c("sex" ), values_from = c("av_time","q95"), values_fill = NA_real_) %>%
+    filter(race %in% c("B","W"))
 
 
 inmate_offense %>%
