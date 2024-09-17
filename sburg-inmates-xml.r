@@ -53,6 +53,9 @@ inmates_df1 <-
     unite("bd", c(dt, tm), sep = " ") %>%
     mutate(bd = as_datetime(bd, format = "%m/%d/%y %H:%M:%S")) %>%
     mutate(across(c(nl:nf, csz, racegen, nm, street), str_to_title)) %>%
+    separate_wider_delim(csz, names = c("city", "state_zip"), delim = ",") %>%
+    mutate(state_zip = str_trim(state_zip)) %>%
+    separate_wider_delim(state_zip, names = c("state", "zip"), delim = "\ ", too_few = "debug", too_many = "debug") %>%
     mutate(race = sapply(
         seq_along(race),
         function(t) null_weeder(race[[t]])
@@ -68,11 +71,11 @@ inmates_df1 <-
 
 offenses25 <-
     inmates_df1 %>%
-    select(rowid, `ar`) %>%
-    unnest_longer(`ar`) %>%
+    select(rowid, `ar...25`) %>%
+    unnest_longer(`ar...25`) %>%
     pivot_wider(
-        names_from = "ar_id",
-        values_from = "ar",
+        names_from = "ar...25_id",
+        values_from = "ar...25",
         values_fn = list
     ) %>%
     select(rowid, of) %>%
@@ -102,14 +105,14 @@ offenses26 <-
     mutate(offense = str_to_title(ol)) %>%
     select(rowid, offense)
 
-offenses <- bind_rows(offenses25) # , offenses26)
+offenses <- bind_rows(offenses25, offenses26)
 
 inmate_offense <-
     right_join(inmates_df1, offenses, by = "rowid", multiple = "all")
 
 
 inmate_offense %>%
-    filter(str_detect(csz, "Boiling Springs|Chesnee|Inman")) %>%
+    filter(str_detect(city, "Boiling Springs|Chesnee|Inman")) %>%
     count(offense, sort = TRUE)
 
 inmate_offense %>%
@@ -121,13 +124,13 @@ crossing(
     gl = read_csv("sources/glstreets.csv", col_types = "c") %>%
         pull(streetname),
     street = inmates_df1 %>%
-        filter(str_detect(csz, "Boiling Springs")) %>%
+        filter(str_detect(city, "Boiling Springs")) %>%
         pull(street)
 ) %>%
     mutate(in_glenlake = str_detect(street, gl)) %>%
     filter(in_glenlake) %>%
     inner_join(inmate_offense, by = "street", multiple = "all") %>%
-    select(nl, nf, street, csz, offense) %>%
+    select(nl, nf, street, city, offense) %>%
     knitr::kable()
 
 
@@ -140,7 +143,7 @@ inmate_offense %>%
 inmate_offense %>%
     filter(str_detect(offense, "Csc|Child|Minor|Sex")) %>%
     unite("name", c(nf, nl), sep = " ") %>%
-    select(csz, name, offense, ) %>%
+    select(city, name, offense, ) %>%
     View()
 
 inmates_df1 %>%
@@ -161,6 +164,53 @@ inmates_df1 %>%
 inmate_offense %>%
     unite("name", c(nf, nm, nl), sep = " ") %>%
     count(name, sort = TRUE)
+
+
+short_crime <- function(crime_long, max_len = 30) {
+    paste0(
+        substr(crime_long, 1, max_len),
+        ifelse(nchar(crime_long) > max_len, "...", "")
+    )
+}
+
+which_town <- function(data, town_req, state_req = "Sc") {
+    data %>%
+        dplyr::filter(city == town_req, state == state_req) %>%
+        dplyr::select(nf, nl, street, offense) %>%
+        tidyr::unite("name", c(nl, nf), sep = ", ") %>%
+        nest(data = offense) %>%
+        mutate(
+            offense_condensed = map(data, distinct),
+            offense_paste = map_chr(offense_condensed, paste, collapse = ", "),
+            offenses = str_remove_all(offense_paste, "\\\"|^c|\\(|\\)$")
+        ) %>%
+        select(-data, -offense_condensed, -offense_paste)
+}
+
+# Boiling Springs inmates
+which_town(inmate_offense, "Boiling Springs") %>% view()
+# Inman inmates
+which_town(inmate_offense, "Inman") %>% view()
+# Chesnee inmates
+which_town(inmate_offense, "Chesnee") %>% view()
+
+search_offenses <- function(data, offense_type) {
+    data %>%
+        dplyr::select(nf, nl, , race, street, offense) %>%
+        tidyr::unite("name", c(nl, nf), sep = ", ") %>%
+        nest(data = offense) %>%
+        mutate(
+            offense_condensed = map(data, distinct),
+            offense_paste = map_chr(offense_condensed, paste, collapse = ", "),
+            offenses = str_remove_all(offense_paste, "\\\"|^c|\\(|\\)$")
+        ) %>%
+        select(-data, -offense_condensed, -offense_paste) %>%
+        filter(str_detect(offenses, offense_type))
+}
+
+
+search_offenses(inmate_offense, "Csc") %>% view()
+
 
 
 bmi_lines <-
