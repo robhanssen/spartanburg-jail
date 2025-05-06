@@ -16,6 +16,16 @@ weight_conversion <- function(wt) {
     round(as.numeric(wt) / 2.2, digits = 2)
 }
 
+process_address <- function(address_str) {
+    addr_list <- sapply(str_split(address_str, " "), rev)
+    zip <- addr_list[1]
+    state <- toupper(addr_list[2])
+    city <- str_remove_all(addr_list[3], ",")
+    street <- paste(addr_list[length(addr_list):4], collapse = " ")
+    tibble(street, city, state, zip)
+}
+
+
 read_arrest_url <- function(url) {
     arrest <- read_html(url)
     name_element <- arrest %>%
@@ -39,7 +49,8 @@ read_arrest_url <- function(url) {
     race_gender <- sapply(str_split(race_gender, "/"), str_trim)
     race <- race_gender[1]
     gender <- race_gender[2]
-    tibble(name, offense, address, date_of_birth, height, weight, race, gender, datetime_arrested)
+    address <- process_address(address)
+    tibble(name, offense, date_of_birth, height, weight, race, gender, datetime_arrested) %>% bind_cols(address)
 }
 
 categorize_offense <- function(offense) {
