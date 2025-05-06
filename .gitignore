@@ -38,4 +38,4 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
-./sources/recent_arrests.csv
+sources/recent_arrests.csv
