@@ -1,29 +1,19 @@
 library(tidyverse)
 library(rvest)
 library(xml2)
-library(future)
 
-plan(multisession)
-
-crime_cat <- read_csv("crime_categories.csv", show_col_types = FALSE)
+crime_cat <- read_csv("sources/crime_categories.csv", show_col_types = FALSE)
 
 url <- "http://www.spartanburgsheriff.org/bookings.php"
-
-all_links <- read_html(url) %>%
-    html_elements("a") %>%
-    html_attr("href")
-
-
-arrest_urls <- paste0("http://www.spartanburgsheriff.org/", all_links[str_detect(all_links, "myscripts")])
 
 height_conversion <- function(ht_ft) {
     ht_ft <- str_remove_all(ht_ft, '\\"')
     ht_vec <- sapply(str_split(ht_ft, pattern = "\'"), as.numeric)
-    sum(ht_vec * c(30.54, 2.54))
+    round(sum(ht_vec * c(30.54, 2.54)), digits = 2)
 }
 
 weight_conversion <- function(wt) {
-    as.numeric(wt) / 2.2
+    round(as.numeric(wt) / 2.2, digits = 2)
 }
 
 read_arrest_url <- function(url) {
@@ -55,18 +45,34 @@ read_arrest_url <- function(url) {
 categorize_offense <- function(offense) {
     offense_lower <- tolower(offense)
     catg <- crime_cat$category[str_detect(offense_lower, crime_cat$search_string)]
-    if (length(catg) == 0) catg <- "Unknown"
-    else if (length(catg) > 1) catg <- first(catg)
+    if (length(catg) == 0) {
+        catg <- "Unknown"
+    } else if (length(catg) > 1) {
+        catg <- first(catg)
+    }
     catg
 }
 
+
+all_links <- read_html(url) %>%
+    html_elements("a") %>%
+    html_attr("href")
+
+
+arrest_urls <- paste0("http://www.spartanburgsheriff.org/", all_links[str_detect(all_links, "myscripts")])
+
 recent_arrest <-
-    furrr::future_map_dfr(arrest_urls, read_arrest_url) %>%
+    purrr::map_dfr(arrest_urls, read_arrest_url) %>%
     mutate(
-        cat_offense = furrr::future_map_chr(offense, categorize_offense)
+        cat_offense = purrr::map_chr(offense, categorize_offense)
     )
 
-read_csv("sources/recent_arrests.csv") %>%
-    bind_rows(recent_arrest) %>%
-    distinct() %>%
-    write_csv("sources/recent_arrests.csv")
+#
+if (!file.exists("sources/recent_arrests.csv")) {
+    write_csv(recent_arrest, "sources/recent_arrests.csv")
+} else {
+    read_csv("sources/recent_arrests.csv", show_col_types = FALSE) %>%
+        bind_rows(recent_arrest) %>%
+        distinct() %>%
+        write_csv("sources/recent_arrests.csv")
+}

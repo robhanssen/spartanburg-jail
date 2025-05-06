@@ -1,17 +1,17 @@
 category,search_string
+Murder,murder
+Criminal Sexual Violence,csc
+Assault,assault
+Domestic violence,domestic violence|cruelty|abuse
 Weapon Violation,weapon|firearm|disch
 Drugs,drug|nar|syring|meth|mdp|oth sch
 DUI,dui
-Assault,assault
-Bad behavior,peace|public disorderly
-Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle
-Tresspassing,trespass
-Domestic violence,domestic violence|cruelty|abuse
-Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice
-Administrative/Family,family ct
 Theft,shoplifting|obt prop|stolen|false token|carbreaking|burglary|larceny|use vehicle
+Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle
 Fraud,fraud|identity
 Vandalism,mal inj per prop
-Criminal Sexual Violence,csc
-Murder,murder
+Bad behavior,peace|public disorderly
+Tresspassing,trespass
+Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice
+Administrative/Family,family ct
 Unknown,nana
