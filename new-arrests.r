@@ -83,7 +83,8 @@ recent_arrest <-
                 crime_cat$type[which(crime_cat$category == m)]
             }
         })
-    )
+    ) %>%
+    arrange(datetime_arrested)
 
 if (!file.exists("sources/recent_arrests.csv")) {
     write_csv(recent_arrest, "sources/recent_arrests.csv")
