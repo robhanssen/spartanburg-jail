@@ -75,10 +75,16 @@ arrest_urls <- paste0("http://www.spartanburgsheriff.org/", all_links[str_detect
 recent_arrest <-
     purrr::map_dfr(arrest_urls, read_arrest_url) %>%
     mutate(
-        cat_offense = purrr::map_chr(offense, categorize_offense)
+        cat_offense = purrr::map_chr(offense, categorize_offense),
+        offense_type = map_chr(cat_offense, \(m) {
+            if (is.na(m)) {
+                "nonviolent"
+            } else {
+                crime_cat$type[which(crime_cat$category == m)]
+            }
+        })
     )
 
-#
 if (!file.exists("sources/recent_arrests.csv")) {
     write_csv(recent_arrest, "sources/recent_arrests.csv")
 } else {

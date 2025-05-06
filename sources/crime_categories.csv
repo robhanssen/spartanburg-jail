@@ -1,17 +1,18 @@
-category,search_string
-Murder,murder
-Criminal Sexual Violence,csc
-Assault,assault
-Domestic violence,domestic violence|cruelty|abuse
-Weapon Violation,weapon|firearm|disch
-Drugs,drug|nar|syring|meth|mdp|oth sch
-DUI,dui
-Theft,shoplifting|obt prop|stolen|false token|carbreaking|burglary|larceny|use vehicle
-Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle
-Fraud,fraud|identity
-Vandalism,mal inj per prop
-Bad behavior,peace|public disorderly
-Tresspassing,trespass
-Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice
-Administrative/Family,family ct
-Unknown,nana
+type,category,search_string
+violent,Murder,murder
+violent,Criminal Sexual Violence,csc
+violent,Assault,assault
+violent,Domestic violence,domestic violence|cruelty|abuse
+violent,Weapon Violation,weapon|firearm|disch
+nonviolent,Drugs,drug|nar|syring|meth|mdp|oth sch
+nonviolent,DUI,dui
+nonviolent,Theft,shoplifting|obt prop|stolen|false token|carbreaking|burglary|larceny|use vehicle
+nonviolent,Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle
+nonviolent,Fraud,fraud|identity
+nonviolent,Vandalism,mal inj per prop
+nonviolent,Bad behavior,peace|public disorderly
+nonviolent,Tresspassing,trespass
+nonviolent,Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice
+nonviolent,Administrative/Family,family ct
+nonviolent,Unknown,nana
+nonviolent,NA,NA
