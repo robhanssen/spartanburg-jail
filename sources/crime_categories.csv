@@ -12,7 +12,7 @@ nonviolent,Fraud,fraud|identity
 nonviolent,Vandalism,mal inj per prop
 nonviolent,Bad behavior,peace|public disorderly
 nonviolent,Trespassing,trespass
-nonviolent,Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice
+nonviolent,Administrative,jurisdiction|ord violation|community supervision|bench warrant|return for detainer|obstructing|false information|mun|mag ct|home detention|fugitive|probation|federal|protection violation|unlawful practice|contempt|return for court
 nonviolent,Administrative/Family,family ct
 nonviolent,Unknown,nana
 nonviolent,NA,NA
