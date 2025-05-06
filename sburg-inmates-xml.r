@@ -71,11 +71,11 @@ inmates_df1 <-
 
 offenses25 <-
     inmates_df1 %>%
-    select(rowid, `ar...25`) %>%
-    unnest_longer(`ar...25`) %>%
+    select(rowid, `ar`) %>%
+    unnest_longer(`ar`) %>%
     pivot_wider(
-        names_from = "ar...25_id",
-        values_from = "ar...25",
+        names_from = "ar_id",
+        values_from = "ar",
         values_fn = list
     ) %>%
     select(rowid, of) %>%
