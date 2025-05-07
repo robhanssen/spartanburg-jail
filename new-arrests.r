@@ -89,7 +89,9 @@ recent_arrest <-
 if (!file.exists("sources/recent_arrests.csv")) {
     write_csv(recent_arrest, "sources/recent_arrests.csv")
 } else {
-    read_csv("sources/recent_arrests.csv", show_col_types = FALSE) %>%
+    read_csv("sources/recent_arrests.csv", 
+        show_col_types = FALSE, 
+        col_types = list(zip = col_character())) %>%
         bind_rows(recent_arrest) %>%
         distinct() %>%
         write_csv("sources/recent_arrests.csv")

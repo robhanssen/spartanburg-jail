@@ -4,11 +4,11 @@ violent,Criminal Sexual Violence,csc
 violent,Assault,assault
 violent,Domestic violence,domestic violence|cruelty|abuse
 violent,Weapon Violation,weapon|firearm|disch
-nonviolent,Drugs,drug|nar|syring|meth|mdp|oth sch
+nonviolent,Drugs,drug|nar|syring|meth|mdp|oth sch|cocaine
 nonviolent,DUI,dui
 nonviolent,Theft,shoplifting|obt prop|stolen|false token|carbreaking|burglary|larceny|use vehicle
-nonviolent,Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle
-nonviolent,Fraud,fraud|identity
+nonviolent,Traffic,hit & run|traffic|seatbelt|moped|dus|driving|speeding|blue lgt|open cont|uninsured|fail ret lic|pedestrian|vehicle|turn signal|proof of insurance|no tag
+nonviolent,Fraud,fraud|identity|forgery
 nonviolent,Vandalism,mal inj per prop
 nonviolent,Bad behavior,peace|public disorderly
 nonviolent,Trespassing,trespass
